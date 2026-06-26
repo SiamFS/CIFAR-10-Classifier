@@ -122,7 +122,7 @@ def evaluate(args):
     for i, name in enumerate(class_names):
         mask = all_targets == i
         if mask.any():
-            per_class_acc[name] = 100. * all_preds[mask].eq(i).sum().item() / mask.sum()
+            per_class_acc[name] = 100. * (all_preds[mask] == i).sum() / mask.sum()
 
     plot_per_class_accuracy(
         [per_class_acc[name] for name in class_names],
