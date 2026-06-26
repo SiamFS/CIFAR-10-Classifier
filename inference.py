@@ -124,7 +124,7 @@ def launch_gradio():
         gr.Markdown('Classify images into: airplane, automobile, bird, cat, deer, dog, frog, horse, ship, truck.')
         with gr.Row():
             with gr.Column(scale=1):
-                image_input = gr.Image(type='pil', label='Upload Image')
+                image_input = gr.Image(type='pil', label='Upload Image', sources=['upload'])
                 submit_btn = gr.Button('Classify', variant='primary')
             with gr.Column(scale=1):
                 label_output = gr.Label(num_top_classes=3, label='Predictions')
