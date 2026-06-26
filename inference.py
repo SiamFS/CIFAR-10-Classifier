@@ -133,13 +133,13 @@ def launch_gradio():
         gr.Markdown(f'''
         **Model:** ResNet-20 (0.27M params) | **Test Accuracy:** {CURRENT_TEST_ACCURACY}%
         **Training:** {NUM_EPOCHS} epochs, batch {BATCH_SIZE}, lr {LEARNING_RATE}, wd {WEIGHT_DECAY}
-        **Multi-Class Detection:** Shows ALL classes above {INFERENCE_CONFIDENCE_THRESHOLD}% confidence in a single image.
-        - CIFAR-10 is single-label, but any class with confidence >= {INFERENCE_CONFIDENCE_THRESHOLD}% is flagged.
+        **Usage:** Upload a single-image photo. The model classifies it into one of 10 categories.
+        - Confidence below {INFERENCE_CONFIDENCE_THRESHOLD}% → the image may not belong to any CIFAR-10 class.
         - Images are auto-resized to 32x32 before classification.
         ''')
     print(f'\nOpen http://localhost:{GRADIO_SERVER_PORT} in your browser')
     print('Upload any image to classify it.\n')
-    demo.launch(server_name='127.0.0.1', server_port=GRADIO_SERVER_PORT, share=False)
+    demo.launch(server_port=GRADIO_SERVER_PORT, share=False)
 
 
 def main():
