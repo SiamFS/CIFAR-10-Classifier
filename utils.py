@@ -3,7 +3,7 @@ import numpy as np
 import torch
 import torchvision
 import torchvision.transforms as transforms
-from torch.utils.data import DataLoader, random_split, Subset
+from torch.utils.data import DataLoader, Subset
 from pathlib import Path
 
 CIFAR10_MEAN = (0.4914, 0.4822, 0.4465)
@@ -109,5 +109,5 @@ if __name__ == '__main__':
 
     images, labels = next(iter(train_loader))
     print(f'Batch shape: {images.shape}, Labels shape: {labels.shape}')
-    print(f'Train augmentation: RandomCrop + RandomHorizontalFlip + RandAugment + RandomErasing + Normalize')
-    print(f'Val/Test: Normalize only')
+    print('Train augmentation: RandomCrop + RandomHorizontalFlip + RandAugment + RandomErasing + Normalize')
+    print('Val/Test: Normalize only')

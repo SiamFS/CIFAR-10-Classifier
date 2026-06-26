@@ -1,5 +1,3 @@
-import os
-import sys
 import time
 import argparse
 import csv
@@ -15,7 +13,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 from model import resnet20, resnet32, resnet56, count_parameters
-from utils import set_seed, get_dataloaders, get_class_names
+from utils import set_seed, get_dataloaders
 
 MODEL_DIR = Path('models')
 RESULTS_DIR = Path('results')
@@ -163,7 +161,7 @@ def train(args):
     log('=' * 70)
     log(f'  Epochs: {args.epochs} | Batch: {args.batch_size} | LR: {args.lr}')
     log(f'  Weight Decay: {args.weight_decay} | Optimizer: {args.optimizer}')
-    log(f'  Scheduler: CosineAnnealingLR')
+    log('  Scheduler: CosineAnnealingLR')
     log('-' * 70)
 
     set_seed(42)
@@ -259,7 +257,7 @@ def train(args):
     save_checkpoint(model, optimizer, scheduler, scaler, args.epochs, best_acc, MODEL_DIR / 'last.pt')
 
     log('-' * 70)
-    log(f'  Training complete!')
+    log('  Training complete!')
     log(f'  Best Val Acc: {best_acc:.2f}% (epoch {best_epoch})')
     log(f'  Total Time: {total_time/60:.1f} min')
     log('=' * 70)

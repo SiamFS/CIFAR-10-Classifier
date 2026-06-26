@@ -108,7 +108,7 @@ def evaluate(args):
 
     report_path = RESULTS_DIR / 'evaluation_report.txt'
     with open(report_path, 'w', encoding='utf-8') as f:
-        f.write(f'CIFAR-10 Evaluation Report\n')
+        f.write('CIFAR-10 Evaluation Report\n')
         f.write(f'Model: {args.model}\n')
         f.write(f'Test Accuracy: {test_acc * 100:.2f}%\n')
         f.write('=' * 70 + '\n')
