@@ -14,6 +14,10 @@ A deep learning project that trains a neural network to recognize 10 different t
 | Precision (Macro) | 93.19% |
 | Recall (Macro) | 93.17% |
 
+**[🚀 Try it Live →](https://huggingface.co/spaces/SiamFS/cifar10-classifier)**
+
+![Web App](results/plots/web_app.png)
+
 ---
 
 ## How to Run (Step by Step)
@@ -237,12 +241,6 @@ ROC (Receiver Operating Characteristic) curves show the trade-off between correc
 ---
 
 ## Real-World Inference Application
-
-**[Live Demo: huggingface.co/spaces/SiamFS/cifar10-classifier](https://huggingface.co/spaces/SiamFS/cifar10-classifier)**
-
-![Web App](results/plots/web_app.png)
-
-We built a web-based application that lets anyone classify images without writing code.
 
 ### How to Launch
 
