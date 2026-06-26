@@ -166,18 +166,6 @@ def evaluate(args):
     report = classification_report(all_targets, all_preds, target_names=class_names, digits=4)
     print(report)
 
-    report_path = RESULTS_DIR / 'evaluation_report.txt'
-    with open(report_path, 'w', encoding='utf-8') as f:
-        f.write('CIFAR-10 Evaluation Report — ResNet-20\n')
-        f.write(f'Test Accuracy: {test_acc * 100:.2f}%\n')
-        f.write('=' * 70 + '\n')
-        f.write(report)
-        f.write('\n\n--- Additional Metrics ---\n')
-        mean_auc = plot_roc_curves(all_probs, all_targets, class_names, PLOTS_DIR / 'roc_curves.png')
-        mean_ap = plot_precision_recall_curves(all_probs, all_targets, class_names, PLOTS_DIR / 'precision_recall.png')
-        f.write(f'Mean ROC-AUC (OvR): {mean_auc:.4f}\n')
-        f.write(f'Mean Average Precision: {mean_ap:.4f}\n')
-
     cm = confusion_matrix(all_targets, all_preds)
     plot_confusion_matrix(cm, class_names, PLOTS_DIR / 'confusion_matrix.png')
 
@@ -195,6 +183,15 @@ def evaluate(args):
 
     mean_auc = plot_roc_curves(all_probs, all_targets, class_names, PLOTS_DIR / 'roc_curves.png')
     mean_ap = plot_precision_recall_curves(all_probs, all_targets, class_names, PLOTS_DIR / 'precision_recall.png')
+
+    report_path = RESULTS_DIR / 'evaluation_report.txt'
+    with open(report_path, 'w', encoding='utf-8') as f:
+        f.write('CIFAR-10 Evaluation Report — ResNet-20\n')
+        f.write(f'Test Accuracy: {test_acc * 100:.2f}%\n')
+        f.write(f'Mean ROC-AUC (OvR): {mean_auc:.4f}\n')
+        f.write(f'Mean Average Precision: {mean_ap:.4f}\n')
+        f.write('=' * 70 + '\n')
+        f.write(report)
 
     print(f'\n  Mean ROC-AUC (One-vs-Rest): {mean_auc:.4f}')
     print(f'  Mean Average Precision: {mean_ap:.4f}')

@@ -20,8 +20,6 @@ def set_seed(seed=RANDOM_SEED):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
 
 
 def get_class_names():
@@ -58,9 +56,13 @@ def get_dataloaders(batch_size=BATCH_SIZE, num_workers=NUM_WORKERS):
     )
 
     total_train = len(train_full)
-    train_size = total_train - TRAIN_VAL_SPLIT
-    train_indices = list(range(train_size))
-    val_indices = list(range(train_size, total_train))
+    val_size = TRAIN_VAL_SPLIT
+    train_size = total_train - val_size
+
+    all_indices = list(range(total_train))
+    random.shuffle(all_indices)
+    train_indices = all_indices[:train_size]
+    val_indices = all_indices[train_size:]
     train_dataset = Subset(train_full, train_indices)
     val_dataset = Subset(val_dataset, val_indices)
 
@@ -134,6 +136,7 @@ def plot_class_distribution(save_path):
     ax2.bar(CLASS_NAMES, per_class, color=colors, edgecolor='white')
     ax2.set_ylabel('Images per Class')
     ax2.set_title('CIFAR-10: Perfectly Balanced (6,000/class)')
+    ax2.set_xticks(range(len(CLASS_NAMES)))
     ax2.set_xticklabels(CLASS_NAMES, rotation=45, ha='right')
     ax2.axhline(y=6000, color='red', linestyle='--', alpha=0.5, label='6,000 baseline')
     ax2.legend()

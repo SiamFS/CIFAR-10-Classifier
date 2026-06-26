@@ -180,7 +180,6 @@ def train(args):
     scaler = GradScaler() if use_amp else None
 
     best_acc = 0.0
-    best_loss = float('inf')
     patience_counter = 0
     history = []
     start_time = time.time()
@@ -206,9 +205,6 @@ def train(args):
             best_acc = val_acc
             patience_counter = 0
             save_checkpoint(model, optimizer, scheduler, scaler, epoch, best_acc, MODEL_DIR / 'best.pt')
-        elif val_loss < best_loss:
-            best_loss = val_loss
-            patience_counter = 0
         else:
             patience_counter += 1
 

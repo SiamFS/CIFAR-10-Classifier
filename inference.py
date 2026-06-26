@@ -16,6 +16,9 @@ from config import (
 from utils import set_seed
 
 DEFAULT_CHECKPOINT = MODEL_DIR / 'best.pt'
+_model_cache = None
+_device = None
+
 transform = transforms.Compose([
     transforms.Resize((32, 32)),
     transforms.ToTensor(),
@@ -30,6 +33,17 @@ def load_model(checkpoint_path, device):
     model = model.to(device)
     model.eval()
     return model
+
+
+def get_model():
+    global _model_cache, _device
+    if _model_cache is None:
+        _device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        if DEFAULT_CHECKPOINT.exists():
+            _model_cache = load_model(DEFAULT_CHECKPOINT, _device)
+        else:
+            raise FileNotFoundError(f'Model not found at {DEFAULT_CHECKPOINT}. Run train.py first.')
+    return _model_cache, _device
 
 
 def predict_with_analysis(probs):
@@ -70,10 +84,10 @@ def predict_cli(image_path, checkpoint_path, device):
 def gradio_predict(image):
     if image is None:
         return {'No image uploaded': 1.0}, ''
-    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    if not DEFAULT_CHECKPOINT.exists():
-        return {'Error: No model found. Run train.py first.': 1.0}, 'Model not trained'
-    model = load_model(DEFAULT_CHECKPOINT, device)
+    try:
+        model, device = get_model()
+    except FileNotFoundError as e:
+        return {str(e): 1.0}, 'Model not trained'
     if isinstance(image, np.ndarray):
         image = Image.fromarray(image)
     else:
