@@ -10,8 +10,7 @@ import gradio as gr
 from model import resnet20
 from config import (
     CIFAR10_MEAN, CIFAR10_STD, CLASS_NAMES, RANDOM_SEED,
-    MODEL_DIR, INFERENCE_CONFIDENCE_THRESHOLD, INFERENCE_MULTI_OBJECT_GAP,
-    GRADIO_SERVER_PORT, BATCH_SIZE, NUM_EPOCHS, LEARNING_RATE, WEIGHT_DECAY,
+    MODEL_DIR, INFERENCE_CONFIDENCE_THRESHOLD, GRADIO_SERVER_PORT, BATCH_SIZE, NUM_EPOCHS, LEARNING_RATE, WEIGHT_DECAY,
     CURRENT_TEST_ACCURACY,
 )
 from utils import set_seed
@@ -48,17 +47,25 @@ def get_model():
 
 
 def predict_with_analysis(probs):
-    top3_probs, top3_indices = probs.topk(3)
-    top1_conf = top3_probs[0].item() * 100
-    top2_conf = top3_probs[1].item() * 100
-    results = [(CLASS_NAMES[top3_indices[i].item()], top3_probs[i].item() * 100) for i in range(3)]
+    all_probs = (probs * 100).cpu().numpy()
+
+    detected = []
+    for i in range(len(CLASS_NAMES)):
+        conf = float(all_probs[i])
+        if conf >= INFERENCE_CONFIDENCE_THRESHOLD:
+            detected.append((CLASS_NAMES[i], conf))
+    detected.sort(key=lambda x: -x[1])
+
+    results = detected[:3] if len(detected) >= 3 else detected
+
     warnings = []
-    if top1_conf < INFERENCE_CONFIDENCE_THRESHOLD:
-        warnings.append(f'Low confidence: Image may not be a CIFAR-10 object (max {top1_conf:.1f}%)')
-    gap = top1_conf - top2_conf
-    if gap < INFERENCE_MULTI_OBJECT_GAP and top1_conf >= INFERENCE_CONFIDENCE_THRESHOLD:
-        warnings.append(f'Multiple objects detected: Top-2 predictions are close ({gap:.1f}% gap)')
-    return results, warnings
+    if len(detected) == 0:
+        warnings.append(f'Nothing detected: all classes below {INFERENCE_CONFIDENCE_THRESHOLD}%. Image may be out of domain.')
+    elif len(detected) > 1:
+        names = [d[0] for d in detected]
+        warnings.append(f'Multiple objects detected: {", ".join(names)}')
+
+    return results, warnings, detected
 
 
 def predict_cli(image_path, checkpoint_path, device):
@@ -70,16 +77,20 @@ def predict_cli(image_path, checkpoint_path, device):
     img_tensor = transform(image).unsqueeze(0).to(device)
     with torch.no_grad():
         probs = F.softmax(model(img_tensor), dim=1)[0]
-    results, warnings = predict_with_analysis(probs)
+    results, warnings, detected = predict_with_analysis(probs)
     print(f'\nImage: {image_path} | Size: {image.size}')
     print('-' * 45)
     for i, (cls_name, conf) in enumerate(results):
         marker = ' <<< TOP' if i == 0 else ''
         print(f'  {i + 1}. {cls_name:<12s} {conf:6.2f}%{marker}')
+    if len(detected) > 3:
+        print(f'  ... and {len(detected) - 3} more above threshold')
     print('-' * 45)
     if warnings:
         for w in warnings:
             print(f'  [!] {w}')
+    else:
+        print(f'  All classes below {INFERENCE_CONFIDENCE_THRESHOLD}% — may be out of domain')
 
 
 def gradio_predict(image):
@@ -96,12 +107,13 @@ def gradio_predict(image):
     img_tensor = transform(image).unsqueeze(0).to(device)
     with torch.no_grad():
         probs = F.softmax(model(img_tensor), dim=1)[0]
-    results, warnings = predict_with_analysis(probs)
-    top1_conf = results[0][1]
-    if top1_conf < INFERENCE_CONFIDENCE_THRESHOLD:
-        label_dict = {'unknown/not-cifar10': 1.0}
+    results, warnings, detected = predict_with_analysis(probs)
+
+    if len(detected) == 0:
+        label_dict = {'No CIFAR-10 objects detected': 1.0}
     else:
-        label_dict = {f'{class_name} ({conf:.1f}%)': float(conf / 100) for class_name, conf in results}
+        label_dict = {f'{class_name} ({conf:.1f}%)': float(conf / 100) for class_name, conf in detected}
+
     return label_dict, '\n'.join(warnings) if warnings else ''
 
 
@@ -121,10 +133,9 @@ def launch_gradio():
         gr.Markdown(f'''
         **Model:** ResNet-20 (0.27M params) | **Test Accuracy:** {CURRENT_TEST_ACCURACY}%
         **Training:** {NUM_EPOCHS} epochs, batch {BATCH_SIZE}, lr {LEARNING_RATE}, wd {WEIGHT_DECAY}
-        **Inference Rules:**
-        - Confidence < {INFERENCE_CONFIDENCE_THRESHOLD}% → Flagged as "unknown/not-cifar10"
-        - Top-2 gap < {INFERENCE_MULTI_OBJECT_GAP}% → Multiple objects warning
-        - Images auto-resized to 32x32 before classification
+        **Multi-Class Detection:** Shows ALL classes above {INFERENCE_CONFIDENCE_THRESHOLD}% confidence in a single image.
+        - CIFAR-10 is single-label, but any class with confidence >= {INFERENCE_CONFIDENCE_THRESHOLD}% is flagged.
+        - Images are auto-resized to 32x32 before classification.
         ''')
     print(f'\nOpen http://localhost:{GRADIO_SERVER_PORT} in your browser')
     print('Upload any image to classify it.\n')
