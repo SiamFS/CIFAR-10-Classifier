@@ -5,7 +5,7 @@ import sys
 def detect_gpu():
     try:
         output = subprocess.check_output(
-            "nvidia-smi --query-gpu=name,memory.total,driver_version,cuda_version --format=csv,noheader",
+            "nvidia-smi --query-gpu=name,memory.total,driver_version --format=csv,noheader",
             shell=True,
             stderr=subprocess.DEVNULL,
             encoding="utf-8"
@@ -31,16 +31,14 @@ def main():
         name = parts[0].strip()
         memory = parts[1].strip()
         driver = parts[2].strip()
-        cuda_ver = parts[3].strip()
         print(f"  Name:        {name}")
         print(f"  VRAM:        {memory}")
         print(f"  Driver:      {driver}")
-        print(f"  CUDA:        {cuda_ver}")
         print()
         print("[INSTALLING] PyTorch with CUDA support...")
         subprocess.check_call([
             sys.executable, "-m", "pip", "install",
-            "torch", "torchvision", "torchaudio",
+            "torch", "torchvision",
             "--index-url", "https://download.pytorch.org/whl/cu124"
         ])
         print()
@@ -56,20 +54,23 @@ def main():
         print("  Training will be SLOW on CPU.")
         print("  CIFAR-10 with 200 epochs may take HOURS instead of minutes.")
         print()
-        response = input("  Continue with CPU-only PyTorch? (y/n): ").strip().lower()
+        try:
+            response = input("  Continue with CPU-only PyTorch? (y/n): ").strip().lower()
+        except EOFError:
+            response = "n"
         if response != "y":
             print("[ABORTED] Install NVIDIA GPU drivers and try again.")
+            print("  Or set --force-cpu to skip this prompt.")
             sys.exit(1)
         print()
         print("[INSTALLING] PyTorch CPU-only...")
         subprocess.check_call([
             sys.executable, "-m", "pip", "install",
-            "torch", "torchvision", "torchaudio",
+            "torch", "torchvision",
             "--index-url", "https://download.pytorch.org/whl/cpu"
         ])
         print()
         print("[WARNING] Running on CPU. Expect slow training times.")
-        print("  Set --device cpu in scripts or environment variable CUDA_VISIBLE_DEVICES=-1")
 
     print()
     print("[INSTALLING] Other dependencies...")
