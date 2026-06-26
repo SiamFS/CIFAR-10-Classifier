@@ -71,7 +71,7 @@ def evaluate(args):
     checkpoint_path = Path(args.checkpoint)
     if not checkpoint_path.exists():
         print(f'  [ERROR] Checkpoint not found: {checkpoint_path}')
-        print(f'  Run "python train.py" first.')
+        print('  Run "python train.py" first.')
         return
 
     model, training_best = load_model(checkpoint_path, device)

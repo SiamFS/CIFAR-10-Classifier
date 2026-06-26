@@ -94,7 +94,7 @@ def gradio_predict(image):
     checkpoint_path = DEFAULT_CHECKPOINT
 
     if not checkpoint_path.exists():
-        return {f'Error: No model found. Run train.py first.': 1.0}, 'Model not trained'
+        return {'Error: No model found. Run train.py first.': 1.0}, 'Model not trained'
 
     model = load_model(checkpoint_path, device)
 
