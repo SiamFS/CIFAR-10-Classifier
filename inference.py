@@ -11,7 +11,8 @@ from model import resnet20
 from config import (
     CIFAR10_MEAN, CIFAR10_STD, CLASS_NAMES, RANDOM_SEED,
     MODEL_DIR, INFERENCE_CONFIDENCE_THRESHOLD, INFERENCE_MULTI_OBJECT_GAP,
-    GRADIO_SERVER_PORT,
+    GRADIO_SERVER_PORT, BATCH_SIZE, NUM_EPOCHS, LEARNING_RATE, WEIGHT_DECAY,
+    CURRENT_TEST_ACCURACY,
 )
 from utils import set_seed
 
@@ -118,9 +119,12 @@ def launch_gradio():
                 warning_output = gr.Textbox(label='Notes', placeholder='No warnings')
         submit_btn.click(fn=gradio_predict, inputs=image_input, outputs=[label_output, warning_output])
         gr.Markdown(f'''
-        **About:** ResNet-20 (92.88% test accuracy) | Auto-resizes to 32x32.
-        Confidence < {INFERENCE_CONFIDENCE_THRESHOLD}% = flagged as unknown.
-        Top-2 gap < {INFERENCE_MULTI_OBJECT_GAP}% = multiple objects warning.
+        **Model:** ResNet-20 (0.27M params) | **Test Accuracy:** {CURRENT_TEST_ACCURACY}%
+        **Training:** {NUM_EPOCHS} epochs, batch {BATCH_SIZE}, lr {LEARNING_RATE}, wd {WEIGHT_DECAY}
+        **Inference Rules:**
+        - Confidence < {INFERENCE_CONFIDENCE_THRESHOLD}% → Flagged as "unknown/not-cifar10"
+        - Top-2 gap < {INFERENCE_MULTI_OBJECT_GAP}% → Multiple objects warning
+        - Images auto-resized to 32x32 before classification
         ''')
     print(f'\nOpen http://localhost:{GRADIO_SERVER_PORT} in your browser')
     print('Upload any image to classify it.\n')
