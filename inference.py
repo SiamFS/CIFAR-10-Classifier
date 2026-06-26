@@ -60,7 +60,7 @@ def predict_with_analysis(probs):
 
     warnings = []
     if len(detected) == 0:
-        warnings.append(f'Nothing detected: all classes below {INFERENCE_CONFIDENCE_THRESHOLD}%. Image may be out of domain.')
+        warnings.append('Unknown: no category has confidence above 50%.')
     elif len(detected) > 1:
         names = [d[0] for d in detected]
         warnings.append(f'Multiple objects detected: {", ".join(names)}')
@@ -90,7 +90,7 @@ def predict_cli(image_path, checkpoint_path, device):
         for w in warnings:
             print(f'  [!] {w}')
     else:
-        print(f'  All classes below {INFERENCE_CONFIDENCE_THRESHOLD}% — may be out of domain')
+        print('  Image not recognized. Try uploading a photo of a single object.')
 
 
 def gradio_predict(image):
@@ -110,7 +110,7 @@ def gradio_predict(image):
     results, warnings, detected = predict_with_analysis(probs)
 
     if len(detected) == 0:
-        label_dict = {'No CIFAR-10 objects detected': 1.0}
+        label_dict = {'Unknown / Not recognized': 1.0}
     else:
         label_dict = {f'{class_name} ({conf:.1f}%)': float(conf / 100) for class_name, conf in detected}
 
