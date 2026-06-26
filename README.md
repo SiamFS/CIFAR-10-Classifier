@@ -19,10 +19,7 @@ A deep learning project that trains a neural network to recognize 10 different t
 ## How to Run (Step by Step)
 
 ### One-Click Method
-```bash
-modelrun.cmd
-```
-This will automatically set up everything and run the entire pipeline.
+See [SETUP.md](SETUP.md) for the full step-by-step guide.
 
 ### Manual Method
 ```bash
@@ -275,7 +272,7 @@ Cifar_10/
 ├── evaluate.py             # Testing & metrics
 ├── inference.py            # Web app (Gradio)
 ├── setup.py                # Auto-installer with GPU detection
-├── modelrun.cmd             # One-click run script (Windows)
+├── SETUP.md                # Step-by-step setup guide
 ├── Dockerfile              # For cloud deployment
 ├── requirements.txt         # Python packages
 ├── .gitignore               # Files excluded from git
