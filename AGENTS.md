@@ -44,6 +44,8 @@ python -m venv venv
 .\venv\Scripts\Activate.ps1
 python setup.py
 ```
+Or use one-click: `modelrun.cmd`
+
 This auto-detects GPU via nvidia-smi, installs the correct PyTorch build (CUDA or CPU), and warns if no GPU found.
 
 ### Training
@@ -56,7 +58,13 @@ python train.py
 python evaluate.py
 ```
 
-### Inference
+### Inference (Web App)
+```powershell
+python inference.py
+# Opens Gradio at http://localhost:7860
+```
+
+### CLI Inference
 ```powershell
 python inference.py <image_path>
 ```
@@ -66,20 +74,21 @@ python inference.py <image_path>
 pip install ruff; ruff check .
 ```
 
-## Model Strategy
-- Start with ResNet-20 (0.27M params) for fast iteration → scale to ResNet-56 (0.86M params, 94.37% baseline)
-- ResNet architecture adapted for CIFAR: 3x3 initial conv, 3 stages, no max pooling
-
-## Reference Hyperparameters (from chenyaofo/pytorch-cifar-models)
-| Parameter | Value |
-|-----------|-------|
-| Epochs | 200 |
-| Batch size | 128 |
-| Optimizer | SGD + momentum 0.9 + nesterov |
-| LR | 0.1 |
-| Weight decay | 5e-4 |
-| Scheduler | CosineAnnealingLR (T_max=200, eta_min=0) |
-| Loss | CrossEntropyLoss |
+## Hyperparameters (config.py)
+All hyperparameters are in `config.py` — modify there, not in individual scripts.
+| Parameter | Value | Config Key |
+|-----------|-------|------------|
+| Epochs | 200 | NUM_EPOCHS |
+| Batch size | 128 | BATCH_SIZE |
+| Optimizer | SGD + momentum 0.9 + nesterov | OPTIMIZER, MOMENTUM |
+| LR | 0.1 | LEARNING_RATE |
+| Weight decay | 5e-4 | WEIGHT_DECAY |
+| Scheduler | CosineAnnealingLR (T_max=200, eta_min=0) | SCHEDULER_T_MAX |
+| Loss | CrossEntropyLoss | — |
+| Val Split | 10% | TRAIN_VAL_SPLIT (0.10) |
+| Early Stop Patience | 25 | EARLY_STOP_PATIENCE |
+| RandAugment | N=2, M=14 | RANDAUG_NUM_OPS, RANDAUG_MAGNITUDE |
+| Random Erasing | p=0.25 | RANDOM_ERASING_P |
 
 ## Dataset
 - **Source:** `torchvision.datasets.CIFAR10` (auto-download, 163MB)
@@ -88,7 +97,7 @@ pip install ruff; ruff check .
 - **Classes:** 10, perfectly balanced
 
 ## Data Preprocessing
-- **Train:** RandomCrop(32, padding=4) + RandomHorizontalFlip + RandAugment + CutMix/MixUp + Normalize
+- **Train:** RandomCrop(32, padding=4) + RandomHorizontalFlip + RandAugment + RandomErasing + Normalize
 - **Val/Test:** Normalize only
 - Mean: (0.4914, 0.4822, 0.4465)
 - Std: (0.2471, 0.2435, 0.2616)
@@ -97,8 +106,17 @@ pip install ruff; ruff check .
 - Console: per-epoch verbose output (epoch, LR, train/val loss, train/val acc, best acc, time)
 - `results/training_log.txt` — full console log mirror
 - `results/experiment_log.csv` — structured CSV for plotting
-- `results/evaluation_report.txt` — classification report
-- All plots saved to `results/plots/` (training curves, confusion matrix, per-class acc, LR schedule, augmentations)
+- `results/evaluation_report.txt` — classification report + ROC-AUC + Average Precision
+- All plots saved to `results/plots/` (training curves, confusion matrix, per-class acc, LR schedule, augmentations, data split, class distribution, ROC curves, precision-recall)
+
+## Current Results
+| Metric | Value |
+|--------|-------|
+| Test Accuracy | 93.17% |
+| Mean ROC-AUC (OvR) | 0.9969 |
+| Mean Avg Precision | 0.9792 |
+| Best Class | automobile (96.5%) |
+| Worst Class | cat (85.0%) |
 
 ## Hyperparameter Tuning Grid
 | Parameter | Values |

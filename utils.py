@@ -56,7 +56,7 @@ def get_dataloaders(batch_size=BATCH_SIZE, num_workers=NUM_WORKERS):
     )
 
     total_train = len(train_full)
-    val_size = TRAIN_VAL_SPLIT
+    val_size = int(total_train * TRAIN_VAL_SPLIT)
     train_size = total_train - val_size
 
     all_indices = list(range(total_train))
