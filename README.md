@@ -1,6 +1,6 @@
 # CIFAR-10 Image Classification
 
-A deep learning project that trains a neural network to recognize 10 different types of objects in images. Built for NITSOL Bangladesh Limited Trainee AI Engineer application.
+A deep learning project that trains a neural network to recognize 10 different types of objects in images.
 
 ## Final Results
 
